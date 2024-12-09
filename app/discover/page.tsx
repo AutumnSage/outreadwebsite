@@ -67,7 +67,7 @@ function sanitizeInput(input: string): string {
     return input.replace(/[^a-zA-Z -123457890]/g, '').slice(0, 150);
 }
 
-function SearchArea({ className, onSubmit, isLoading, isMobile }: { isMobile: boolean, className: string; onSubmit: (query: string, complexity: string) => void; isLoading: boolean }) {
+function SearchArea({ className, onSubmit, isLoading, isMobile , previousQuestions }: { isMobile: boolean, className: string; onSubmit: (query: string, complexity: string) => void; isLoading: boolean , previousQuestions : string[]}) {
     const [value, setValue] = useState("");
     const [complexity, setComplexity] = useState("informative");
 
@@ -116,52 +116,25 @@ function SearchArea({ className, onSubmit, isLoading, isMobile }: { isMobile: bo
                         <Button
                             onClick={handleSubmit}
                             disabled={isLoading}
-                            className="w-1/3 bg-[#88d84d] text-white "
+                            className="w-fit bg-[#88d84d] text-white min-w-fit px-[10px] py-[25px] rounded-full"
                         >
                             {isLoading ? 
-                            "Processing..." : 
-                                <SearchIcon className="text-2xl text-default-400 pointer-events-none flex-shrink-0" />
+                            <svg className="text-2xl text-default-400 pointer-events-none flex-shrink-0 text-white" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-dasharray="16" stroke-dashoffset="16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3c4.97 0 9 4.03 9 9"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.2s" values="16;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></svg>
+                            : 
+                            <svg className="text-2xl text-default-400 pointer-events-none flex-shrink-0 text-white" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="m19.6 21l-6.3-6.3q-.75.6-1.725.95T9.5 16q-2.725 0-4.612-1.888T3 9.5t1.888-4.612T9.5 3t4.613 1.888T16 9.5q0 1.1-.35 2.075T14.7 13.3l6.3 6.3zM9.5 14q1.875 0 3.188-1.312T14 9.5t-1.312-3.187T9.5 5T6.313 6.313T5 9.5t1.313 3.188T9.5 14"/></svg>
                             }
                         </Button>
                      </div>
                      </div>
-                    {/* <Textarea
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                                handleSubmit();
-                            }
-                        }}
-                        value={value}
-                        className="bg-white"
-                        onValueChange={handleChange}
-                        placeholder="Ask A Question"
-                        classNames={{ innerWrapper: 'bg-whitSearche hover:bg-white', base: 'bg-white hover:bg-white ', inputWrapper: 'shadow-none bg-white data-[hover=true]:bg-white group-data-[focus=true]:bg-white ', }}
-                        maxLength={250}
-                        endContent={
-                            <SearchIcon className="text-2xl text-default-400 pointer-events-none flex-shrink-0" />
-                        }
-                    /> */}
                 </div>
+                {
+                    previousQuestions.length > 0 && (
+                    <div>
+                        Trending Searches 
+                    </div>
+                    )
+                }
             </div>
-            <div className="w-full mb-4 bg-white">
-                {/* <Select
-                    label="Complexity"
-                    placeholder="Select complexity"
-                    selectedKeys={[complexity]}
-                    classNames={{ mainWrapper: "rounded", base: "bg-[#F4F7FB]", trigger: "bg-white" }}
-                    onChange={(e) => setComplexity(e.target.value)}
-                >
-                    <SelectItem className="text-black w-full" key="simple" value="simple">Simple</SelectItem>
-                    <SelectItem className="text-black w-full" key="informative" value="informative">Informative</SelectItem>
-                </Select> */}
-            </div>
-            <Button
-                onClick={handleSubmit}
-                disabled={isLoading}
-                className="w-1/3 bg-[#88d84d] text-white "
-            >
-                {isLoading ? "Processing..." : "Submit"}
-            </Button>
         </div >
     );
 }
@@ -349,13 +322,79 @@ function LoadingAnimation() {
 //     );
 // }
 
+// const dummyArticleData: ArticleData = {
+//     summary: {
+//       insight: [
+//         {
+//           type: "semantic_scholar",
+//           paper_id: "12345",
+//           insight: "This paper demonstrates the effectiveness of deep learning in image recognition tasks.",
+//           keyword: "deep learning",
+//           insight_explanation: "The study shows how convolutional neural networks outperform traditional methods in image classification benchmarks.",
+//           doi: "10.1000/example1",
+//           title: "Deep Learning for Image Recognition",
+//           authors: ["John Doe", "Jane Smith"],
+//           year: 2021,
+//           citationCount: 350,
+//           url: "https://example.com/deep-learning-image-recognition"
+//         },
+//         {
+//           type: "outread",
+//           paper_id: "67890",
+//           insight: "This paper introduces a novel approach to natural language processing using transformers.",
+//           keyword: "transformers",
+//           insight_explanation: "The authors propose a method that significantly improves performance on text generation tasks.",
+//           doi: "10.1000/example2",
+//           title: "Advances in Natural Language Processing with Transformers",
+//           authors: ["Alice Brown", "Bob White"],
+//           year: 2022,
+//           citationCount: 500,
+//           url: "https://example.com/nlp-transformers"
+//         }
+//       ],
+//       summarised_response: "Recent research highlights advancements in deep learning for image recognition and the use of transformers in natural language processing."
+//     },
+//     relevant_papers: [
+//       {
+//         title: "Understanding Convolutional Neural Networks",
+//         author: "Michael Johnson",
+//         slug: "understanding-cnn",
+//         doi: "10.1000/example3",
+//         relevance_score: 0.92,
+//         altMetricScore: 42.5,
+//         one_card_summary: {
+//           content: "This paper provides a comprehensive overview of convolutional neural networks and their applications.",
+//           heading: "Overview of CNNs"
+//         },
+//         type: "semantic_scholar",
+//         abstract: "Convolutional Neural Networks (CNNs) have revolutionized computer vision tasks, achieving state-of-the-art results in multiple domains.",
+//         citationCount: 200
+//       },
+//       {
+//         title: "The Rise of Transformers in AI",
+//         author: "Sarah Wilson",
+//         doi: "10.1000/example4",
+//         relevance_score: 0.88,
+//         altMetricScore: 37.2,
+//         one_card_summary: {
+//           content: "This paper explores the rapid adoption of transformer-based architectures in artificial intelligence.",
+//           heading: "Transformers in AI"
+//         },
+//         type: "outread",
+//         abstract: "Transformer models have emerged as a dominant architecture for natural language processing and other AI tasks.",
+//         citationCount: 150
+//       }
+//     ]
+//   };
+
+
 function DiscoverPage() {
     const router = useRouter();
     const isMobile = useClientMediaQuery("(max-width: 768px)");
     const [articleData, setArticleData] = useState<ArticleData | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [previousQuestions, setPreviousQuestions] = useState<PreviousQuestion[]>([]);
+    const [previousQuestions, setPreviousQuestions] = useState<PreviousQuestion[]>(['1']);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
@@ -459,16 +498,13 @@ function DiscoverPage() {
     const content = (
         <>
             <div className="flex flex-col items-center justify-start w-full h-full bg-[#F4F7FB] ">
-                {/* <div className="w-full flex flex-col items-end justify-end text-xl bg-[#f5f5f5] text-black">
-                    Credit : {getUserCredit()}
-                </div> */}
                 <SearchArea
                     className={`${isMobile ? 'w-full' : 'w-1/2'}   mb-${isMobile ? '4' : '8'} `}
                     onSubmit={fetchData}
                     isLoading={isLoading}
                     isMobile={isMobile!}
+                    previousQuestions={['previousQuestions1' , 'previousQuestions2' , 'previousQuestions3' , 'previousQuestion4']}
                 />
-
                 {error && <div className="text-red-500 mb-4">{error}</div>}
                 {isLoading && <LoadingAnimation />}
                 {!isLoading && <DiscoverContent isMobile={isMobile!} articleData={articleData} />}
