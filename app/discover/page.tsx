@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useRef, useCallback, useEffect } from "react";
+import React, { useState, useRef, useCallback, useEffect, ChangeEvent } from "react";
 import { useClientMediaQuery } from "@/hooks/useClientMediaQuery";
 import { Textarea, Card, CardBody, CardHeader, Button, Progress, Select, SelectItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/react";
 import { SearchIcon } from "@nextui-org/shared-icons";
@@ -80,37 +80,80 @@ function SearchArea({ className, onSubmit, isLoading, isMobile }: { isMobile: bo
     };
 
     return (
-        <div className={`${className} flex flex-col items-center p-2 bg-[#f5f5f5]`}>
-            <div className="bg-white w-full flex flex-col items-center drop-shadow-lg rounded-xl  mb-4  h-[150px] cursor-default">
-                <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} mt-2 text-black font-semibold mb-${isMobile ? '4' : '8'}`}>Discover Articles</h1>
-                <Textarea
-                    onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                            handleSubmit();
+        <div className={`${className} flex flex-col items-center p-2 bg-[#F4F7FB]`}>
+            <div className="flex flex-col gap-5 w-full justify-center  text-center">
+                <div className="mt-24">
+                    <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl'}  text-black font-medium  mb-2`}>Discover Articles</h1>
+                    <p className="font-medium text-[24px] text-center text-[#686868]	" >Ask any question </p>
+                </div>
+                <div className="bg-white w-full flex flex-col items-center drop-shadow-lg rounded-xl  mb-4  py-5 px-4 cursor-default">
+                    <div className="flex flex-col w-full">
+                    <Textarea
+                        className="bg-white articles-search rounded-md "
+                        placeholder="Ask a question..."
+                        onKeyDown={(e : KeyboardEvent) => {
+                            if (e.key === "Enter") {
+                                handleSubmit();
+                            }
+                        }}
+                        value={value}
+                        onValueChange={handleChange}
+                        maxLength={250}
+                     />
+                     <div className="flex justify-between items-center">
+                        <div className="w-1/3">
+                            <Select
+                            labelPlacement={"inside"}
+                            label="Complexity"
+                            selectedKeys={[complexity]}
+                            classNames={{ mainWrapper: "rounded", base: "bg-white", trigger: "bg-white" }}
+                            onChange={(e : ChangeEvent<HTMLSelectElement>) => setComplexity(e.target.value)}
+                        >
+                            <SelectItem className="text-black w-full" key="simple" value="simple">Simple</SelectItem>
+                            <SelectItem className="text-black w-full" key="informative" value="informative">Informative</SelectItem>
+                        </Select>
+                        </div>
+                        <Button
+                            onClick={handleSubmit}
+                            disabled={isLoading}
+                            className="w-1/3 bg-[#88d84d] text-white "
+                        >
+                            {isLoading ? 
+                            "Processing..." : 
+                                <SearchIcon className="text-2xl text-default-400 pointer-events-none flex-shrink-0" />
+                            }
+                        </Button>
+                     </div>
+                     </div>
+                    {/* <Textarea
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                handleSubmit();
+                            }
+                        }}
+                        value={value}
+                        className="bg-white"
+                        onValueChange={handleChange}
+                        placeholder="Ask A Question"
+                        classNames={{ innerWrapper: 'bg-whitSearche hover:bg-white', base: 'bg-white hover:bg-white ', inputWrapper: 'shadow-none bg-white data-[hover=true]:bg-white group-data-[focus=true]:bg-white ', }}
+                        maxLength={250}
+                        endContent={
+                            <SearchIcon className="text-2xl text-default-400 pointer-events-none flex-shrink-0" />
                         }
-                    }}
-                    value={value}
-                    className="bg-white"
-                    onValueChange={handleChange}
-                    placeholder="Ask A Question"
-                    classNames={{ innerWrapper: 'bg-whitSearche hover:bg-white', base: 'bg-white hover:bg-white ', inputWrapper: 'shadow-none bg-white data-[hover=true]:bg-white group-data-[focus=true]:bg-white ', }}
-                    maxLength={250}
-                    endContent={
-                        <SearchIcon className="text-2xl text-default-400 pointer-events-none flex-shrink-0" />
-                    }
-                />
+                    /> */}
+                </div>
             </div>
             <div className="w-full mb-4 bg-white">
-                <Select
+                {/* <Select
                     label="Complexity"
                     placeholder="Select complexity"
                     selectedKeys={[complexity]}
-                    classNames={{ mainWrapper: "rounded", base: "bg-[#f5f5f5]", trigger: "bg-white" }}
+                    classNames={{ mainWrapper: "rounded", base: "bg-[#F4F7FB]", trigger: "bg-white" }}
                     onChange={(e) => setComplexity(e.target.value)}
                 >
                     <SelectItem className="text-black w-full" key="simple" value="simple">Simple</SelectItem>
                     <SelectItem className="text-black w-full" key="informative" value="informative">Informative</SelectItem>
-                </Select>
+                </Select> */}
             </div>
             <Button
                 onClick={handleSubmit}
@@ -288,23 +331,23 @@ function LoadingAnimation() {
         </div>
     );
 }
-function Sidebar({ questions, onQuestionClick }: { questions: PreviousQuestion[], onQuestionClick: (question: PreviousQuestion) => void }) {
-    return (
-        <div className="w-64 bg-gray-300 rounded-md h-full overflow-y-auto p-4 border-r border-gray-200 text-black ">
-            <h2 className="text-xl font-semibold mb-4">Previous Questions</h2>
-            {questions.map((question) => (
-                <div
-                    key={question.id}
-                    className="cursor-pointer hover:bg-gray-100 p-2 rounded mb-2"
-                    onClick={() => onQuestionClick(question)}
-                >
-                    <p className="text-sm font-medium">{question.query}</p>
-                    <p className="text-xs text-gray-500">{new Date(question.createdAt).toLocaleString()}</p>
-                </div>
-            ))}
-        </div>
-    );
-}
+// function Sidebar({ questions, onQuestionClick }: { questions: PreviousQuestion[], onQuestionClick: (question: PreviousQuestion) => void }) {
+//     return (
+//         <div className="w-64 bg-gray-300 rounded-md h-full overflow-y-auto p-4 border-r border-gray-200 text-black ">
+//             <h2 className="text-xl font-semibold mb-4">Previous Questions</h2>
+//             {questions.map((question) => (
+//                 <div
+//                     key={question.id}
+//                     className="cursor-pointer hover:bg-gray-100 p-2 rounded mb-2"
+//                     onClick={() => onQuestionClick(question)}
+//                 >
+//                     <p className="text-sm font-medium">{question.query}</p>
+//                     <p className="text-xs text-gray-500">{new Date(question.createdAt).toLocaleString()}</p>
+//                 </div>
+//             ))}
+//         </div>
+//     );
+// }
 
 function DiscoverPage() {
     const router = useRouter();
@@ -415,12 +458,12 @@ function DiscoverPage() {
 
     const content = (
         <>
-            <div className="flex flex-col items-center justify-start w-full h-full bg-[#f5f5f5] ">
-                <div className="w-full flex flex-col items-end justify-end text-xl bg-[#f5f5f5] text-black">
+            <div className="flex flex-col items-center justify-start w-full h-full bg-[#F4F7FB] ">
+                {/* <div className="w-full flex flex-col items-end justify-end text-xl bg-[#f5f5f5] text-black">
                     Credit : {getUserCredit()}
-                </div>
+                </div> */}
                 <SearchArea
-                    className={`${isMobile ? 'w-full' : 'w-1/2'}  bg-[#F5F5F5] mb-${isMobile ? '4' : '8'} `}
+                    className={`${isMobile ? 'w-full' : 'w-1/2'}   mb-${isMobile ? '4' : '8'} `}
                     onSubmit={fetchData}
                     isLoading={isLoading}
                     isMobile={isMobile!}
@@ -448,8 +491,8 @@ function DiscoverPage() {
 
     return (
         <div className="flex w-full min-h-screen bg-[#F5F5F5]">
-            {!isMobile && <Sidebar questions={previousQuestions} onQuestionClick={handleQuestionClick} />}
-            <div className={`flex-1 flex flex-col items-center justify-start p-${isMobile ? '4' : '8'}`}>
+            {/* {!isMobile && <Sidebar questions={previousQuestions} onQuestionClick={handleQuestionClick} />} */}
+            <div className={`bg-[#F4F7FB] flex-1 flex flex-col items-center justify-start p-${isMobile ? '4' : '8'}`}>
                 {content}
             </div>
         </div>
