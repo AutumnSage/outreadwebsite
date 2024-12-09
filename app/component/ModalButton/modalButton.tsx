@@ -58,6 +58,8 @@ export default function ModalButton({ boardered, text, bgColour, textColour, wid
     const [state, formAction] = useFormState<NewsletterResult | null, FormData>(newsletterSignup, null)
     const formRef = useRef<HTMLFormElement>(null);
     const router = useRouter();
+    console.log("================ router " , router);
+    
     const [email, setEmail] = useState('')
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -84,7 +86,7 @@ export default function ModalButton({ boardered, text, bgColour, textColour, wid
     return (
         <>
             <Button
-                className={`text-${textColour} ${boardered ? 'border-solid border-2 border-black' : ''} text-md text-center rounded-md`}
+                className={`text-${textColour} ${boardered ? 'border-solid border-2 border-black rounded-md' : 'hover:border-b-2 border-[#88D84D] rounded-none hover:text-[#88D84D] '} text-md text-center font-medium`}
                 style={{ backgroundColor: bgColour, width: width, height: height }}
                 onClick={onOpen}
             >
@@ -125,7 +127,6 @@ export default function ModalButton({ boardered, text, bgColour, textColour, wid
                                 <SubmitButton />
                             </form>
                         </div>
-
                     </ModalBody>
                 </ModalContent>
             </Modal>

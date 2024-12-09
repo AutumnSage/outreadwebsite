@@ -6,7 +6,6 @@ import Footer from "./component/FooterComponents/Footer";
 import { Poppins } from "next/font/google";
 import Script from 'next/script';
 
-const poppins = Poppins({ weight: ["400", "600", "800"], subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Outread",
@@ -63,9 +62,12 @@ export default async function RootLayout({
         })(window,document,'script','dataLayer','GTM-5Z7KK8B9');
             `}
         </Script>
-
+        <link
+            href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800;900&display=swap"
+            rel="stylesheet"
+          />
       </head>
-      <body className={poppins.className}>
+      <body >
         <noscript>
           <iframe
             src="https://www.googletagmanager.com/ns.html?id=GTM-5Z7KK8B9"

@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
 :root {
   --foreground-rgb: 0, 0, 0;
@@ -92,5 +93,10 @@ input:checked + .slider:before {
   @apply !bg-white shadow-none;
 }
 .articles-search textarea {
-  font-size: 22px;;
+  font-size: 22px;
+  transition: ease-in-out;
+}
+
+.contact-us-btn[data-hover='true'] , .auth-btn[data-hover='true'] {
+  background-color: transparent !important;
 }

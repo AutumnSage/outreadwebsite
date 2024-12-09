@@ -1,13 +1,14 @@
 "use client"
 
-import React, { useState, useRef, useCallback, useEffect, ChangeEvent } from "react";
+import React, { useState, useRef, useCallback, useEffect, ChangeEvent, KeyboardEvent } from "react";
 import { useClientMediaQuery } from "@/hooks/useClientMediaQuery";
-import { Textarea, Card, CardBody, CardHeader, Button, Progress, Select, SelectItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/react";
+import { Textarea, Card, CardBody, CardHeader, Button, Progress, Select, SelectItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Divider, Skeleton } from "@nextui-org/react";
 import { SearchIcon } from "@nextui-org/shared-icons";
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import { useUserStore, getUserCredit, isAuthenticated, getUserId, getUserIsLoading, updateZustand } from '@/lib/zustand/zustand';
 import { get } from "http";
+import DataLoadingSkeleton from "../component/Discover/DataLoadingSkeleton";
 
 
 interface Insight {
@@ -67,7 +68,7 @@ function sanitizeInput(input: string): string {
     return input.replace(/[^a-zA-Z -123457890]/g, '').slice(0, 150);
 }
 
-function SearchArea({ className, onSubmit, isLoading, isMobile , previousQuestions }: { isMobile: boolean, className: string; onSubmit: (query: string, complexity: string) => void; isLoading: boolean , previousQuestions : string[]}) {
+function SearchArea({ className, onSubmit, isLoading, isMobile , previousQuestions , articleData }: { isMobile: boolean, className: string; onSubmit: (query: string, complexity: string) => void; isLoading: boolean , previousQuestions : string[] , articleData : ArticleData | null}) {
     const [value, setValue] = useState("");
     const [complexity, setComplexity] = useState("informative");
 
@@ -79,8 +80,12 @@ function SearchArea({ className, onSubmit, isLoading, isMobile , previousQuestio
         onSubmit(value, complexity);
     };
 
+    const searchTending = (value: string) => {
+        setValue(sanitizeInput(value));
+        onSubmit(sanitizeInput(value), complexity);
+    }
     return (
-        <div className={`${className} flex flex-col items-center p-2 bg-[#F4F7FB]`}>
+        <div className={`${className} flex flex-col items-center py-2 bg-[#F4F7FB]`}>
             <div className="flex flex-col gap-5 w-full justify-center  text-center">
                 <div className="mt-24">
                     <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl'}  text-black font-medium  mb-2`}>Discover Articles</h1>
@@ -90,8 +95,9 @@ function SearchArea({ className, onSubmit, isLoading, isMobile , previousQuestio
                     <div className="flex flex-col w-full">
                     <Textarea
                         className="bg-white articles-search rounded-md "
-                        placeholder="Ask a question..."
-                        onKeyDown={(e : KeyboardEvent) => {
+                        label="Ask a question..."
+                        disabled={isLoading}
+                        onKeyDown={(e : KeyboardEvent<HTMLInputElement>) => {
                             if (e.key === "Enter") {
                                 handleSubmit();
                             }
@@ -105,6 +111,7 @@ function SearchArea({ className, onSubmit, isLoading, isMobile , previousQuestio
                             <Select
                             labelPlacement={"inside"}
                             label="Complexity"
+                            disabled={isLoading}
                             selectedKeys={[complexity]}
                             classNames={{ mainWrapper: "rounded", base: "bg-white", trigger: "bg-white" }}
                             onChange={(e : ChangeEvent<HTMLSelectElement>) => setComplexity(e.target.value)}
@@ -128,9 +135,23 @@ function SearchArea({ className, onSubmit, isLoading, isMobile , previousQuestio
                      </div>
                 </div>
                 {
-                    previousQuestions.length > 0 && (
-                    <div>
-                        Trending Searches 
+                    (previousQuestions.length > 0 && articleData == null && !isLoading) && (
+                    <div className="mt-20 mb-20">
+                        <p className="font-medium text-2xl text-center text-[#686868] mb-10 ">Trending Searches</p>
+                        <div className="flex flex-col gap-4">
+                            { previousQuestions.map((question, index) => (
+                            <div key={index} className="flex justify-between w-full bg-white items-center drop-shadow-lg rounded-xl  mb-4  py-2 px-4 cursor-default">
+                                <p className="text-[#132435] text-lg font-normal">{question}</p>
+                                <Button
+                            onClick={() => searchTending(question)}
+                            disabled={isLoading}
+                            className="w-fit bg-white text-[#D9D9D9] hover:bg-[#D9D9D9] hover:text-white  min-w-fit px-[10px] py-[25px] rounded-full transition-all"
+                        >
+                            <svg className="text-2xl text-default-400 pointer-events-none flex-shrink-0 " xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="m19.6 21l-6.3-6.3q-.75.6-1.725.95T9.5 16q-2.725 0-4.612-1.888T3 9.5t1.888-4.612T9.5 3t4.613 1.888T16 9.5q0 1.1-.35 2.075T14.7 13.3l6.3 6.3zM9.5 14q1.875 0 3.188-1.312T14 9.5t-1.312-3.187T9.5 5T6.313 6.313T5 9.5t1.313 3.188T9.5 14"/></svg>
+                        </Button>
+                            </div>
+                            ))}
+                        </div>
                     </div>
                     )
                 }
@@ -142,13 +163,13 @@ function SearchArea({ className, onSubmit, isLoading, isMobile , previousQuestio
 function ReferencedText({ text, onReferenceClick }: { text: string, onReferenceClick: (index: number) => void }) {
     const parts = text.split(/(<reference>\d+<\/reference>)/);
     return (
-        <p >
+        <p className="text-[#132435] font-normal text-lg">
             {parts.map((part, i) => {
                 const match = part.match(/<reference>(\d+)<\/reference>/);
                 if (match) {
                     const indexes = match[1].split(',').map(index => parseInt(index));
                     return (
-                        <sup key={i} className="text-blue-500 cursor-pointer" onClick={() => onReferenceClick(indexes[0])}>
+                        <sup key={i} className="text-[#88D84D] font-normal text-sm cursor-pointer" onClick={() => onReferenceClick(indexes[0])}>
                             [{match[1]}]
                         </sup>
                     );
@@ -174,33 +195,37 @@ function InsightCard({ isMobile, insight, relevantPaper, isSelected }: { isMobil
     console.log({relevantPaper})
     
     return (
-        <Card className={` px-3 py-4 mb-4 ${isSelected ? 'bg-gray-300' : ''}`}>
-            <CardHeader className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold">{insight.insight}</h3>
+        <Card className={` px-[10px] py-4  ${isSelected ? 'bg-gray-300' : ''}`}>
+            <CardHeader className="flex justify-between items-center px-[10px] pb-0">
+                <h3 className="text-xl text-[#132435] font-semibold">{insight.insight}</h3>
             </CardHeader>
-            <CardBody>
-                <p>{insight.insight_explanation}</p>
-                <div className="mt-4">
-                    {/* <p className="text-gray-400 font-semibold">Author: {insight.author}</p> */}
+            <CardBody className="px-[10px]">
+                <p className="text-[#686868] text-lg font-normal">{insight.insight_explanation}</p>
+                <div className="flex gap-3 my-6 text-sm">
+                    <p className="text-[#686868] font-semibold">Author: {insight.authors?.join(", ") || "No authors available"}</p>
                     {/* {relevantPaper.type === "semantic_scholar" ? ( */}
-                    <p className="text-gray-400 font-semibold">Citation Count: {insight.citationCount}</p>
+                    {/* <p className="text-gray-400 font-semibold">Citation Count: {insight.citationCount}</p> */}
                     {/* ) : */}
                         {/* <p className="text-gray-400 font-semibold">Altmetric Score: {relevantPaper.altMetricScore}</p> */}
                     {/* } */}
-                    <p className="text-gray-400 font-semibold">DOI: {insight.doi}</p>
+                    <p className="text-[#686868] font-semibold">DOI: {insight.doi}</p>
                 </div>
                 <div className={`flex items-center w-full h-full ${isMobile ? "flex-col" : ""}`}>
-                    <div className="mt-4 w-full">
-                        <p className="text-gray-400 font-semibold">Relevance Score:</p>
+                    <div className="mt-4 w-full flex flex-col gap-3">
+                        <div className="max-w-md flex justify-between">
+                        <p className="text-[#686868] ">Relevance Score:</p>
+                        <p className="text-[#686868] ">{(relevantPaper.relevance_score * 100).toFixed(0)}</p>
+                        </div>
                         <Progress
                             value={relevantPaper.relevance_score * 100}
                             className="max-w-md"
                             color="success"
-                            showValueLabel={true}
-                            label={`${(relevantPaper.relevance_score * 100).toFixed(0)}%`}
+                            size="sm"
+                            showValueLabel={false}
+                            // label={`${(relevantPaper.relevance_score * 100).toFixed(0)}%`}
                         />
                     </div>
-                    <Button className="bg-[#88d84d] text-white mt-4 min-w-36" onClick={handleExpandClick}>
+                    <Button className="bg-[#88d84d] rounded-full py-2 h-auto text-white mt-4 min-w-36 shadow-md" onClick={handleExpandClick}>
                         {relevantPaper.type === "semantic_scholar" ? "View Paper" : (expanded ? "Collapse" : "Expand")}
                     </Button>
                 </div>
@@ -241,27 +266,36 @@ function DiscoverContent({ isMobile, articleData }: { isMobile: boolean, article
     }
 
     return (
-        <div className="w-full max-w-4xl mx-auto text-black">
-            <div className="bg-white text-black px-6 py-4 rounded-md ">
+        <div className="xl:w-10/12 w-full lg:max-w-4xl  mx-auto text-black mt-5">
+            <div className=" text-black  py-4 rounded-md ">
                 <h2 className="text-2xl font-semibold mb-4 ">Summary</h2>
                 <ReferencedText
                     text={articleData.summary.summarised_response}
                     onReferenceClick={scrollToInsight}
                 />
+                <Divider className="mt-16 h-[1.72px]  bg-[#D9D9D9]" />
             </div>
-            <h2 className="text-2xl font-semibold1 my-4">Insights</h2>
-            {articleData.summary.insight.map((insight, index) => (
-                <div key={index} ref={(el) => {
-                    if (el) insightRefs.current[index] = el;
-                }}>
-                    <InsightCard
-                        isMobile={isMobile}
-                        insight={insight}
-                        relevantPaper={articleData.relevant_papers[index]}
-                        isSelected={index === selectedInsightIndex}
-                    />
-                </div>
-            ))}
+            {
+                articleData.summary.insight.length > 0 && ( 
+                    <>
+                        <h2 className="text-2xl font-semibold mb-8 mt-12 text-[#132435]">Insights</h2>
+                        <div className="flex flex-col gap-14 mb-14">
+                        {articleData.summary.insight.map((insight, index) => (
+                            <div key={index} ref={(el) => {
+                                if (el) insightRefs.current[index] = el;
+                            }}>
+                                <InsightCard
+                                    isMobile={isMobile}
+                                    insight={insight}
+                                    relevantPaper={articleData.relevant_papers[index]}
+                                    isSelected={index === selectedInsightIndex}
+                                />
+                            </div>
+                        ))}
+                        </div>
+                    </>
+                )
+            }
         </div>
     );
 }
@@ -293,14 +327,9 @@ function LoadingAnimation() {
 
 
     return (
-        <div className="text-center text-2xl font-semibold text-[black]">
-            <div role="status" className="flex flex-col justify-center items-center mb-2">
-                <svg aria-hidden="true" className="inline w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-green-500" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor" />
-                    <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill" />
-                </svg>
-            </div>
-            {messages[currentMessage]}...
+        <div  className={`xl:w-10/12 w-full lg:max-w-4xl`}>
+            <p className="text-center text-xl font-medium text-[black]">{messages[currentMessage]}...</p> 
+            <DataLoadingSkeleton />
         </div>
     );
 }
@@ -322,71 +351,6 @@ function LoadingAnimation() {
 //     );
 // }
 
-// const dummyArticleData: ArticleData = {
-//     summary: {
-//       insight: [
-//         {
-//           type: "semantic_scholar",
-//           paper_id: "12345",
-//           insight: "This paper demonstrates the effectiveness of deep learning in image recognition tasks.",
-//           keyword: "deep learning",
-//           insight_explanation: "The study shows how convolutional neural networks outperform traditional methods in image classification benchmarks.",
-//           doi: "10.1000/example1",
-//           title: "Deep Learning for Image Recognition",
-//           authors: ["John Doe", "Jane Smith"],
-//           year: 2021,
-//           citationCount: 350,
-//           url: "https://example.com/deep-learning-image-recognition"
-//         },
-//         {
-//           type: "outread",
-//           paper_id: "67890",
-//           insight: "This paper introduces a novel approach to natural language processing using transformers.",
-//           keyword: "transformers",
-//           insight_explanation: "The authors propose a method that significantly improves performance on text generation tasks.",
-//           doi: "10.1000/example2",
-//           title: "Advances in Natural Language Processing with Transformers",
-//           authors: ["Alice Brown", "Bob White"],
-//           year: 2022,
-//           citationCount: 500,
-//           url: "https://example.com/nlp-transformers"
-//         }
-//       ],
-//       summarised_response: "Recent research highlights advancements in deep learning for image recognition and the use of transformers in natural language processing."
-//     },
-//     relevant_papers: [
-//       {
-//         title: "Understanding Convolutional Neural Networks",
-//         author: "Michael Johnson",
-//         slug: "understanding-cnn",
-//         doi: "10.1000/example3",
-//         relevance_score: 0.92,
-//         altMetricScore: 42.5,
-//         one_card_summary: {
-//           content: "This paper provides a comprehensive overview of convolutional neural networks and their applications.",
-//           heading: "Overview of CNNs"
-//         },
-//         type: "semantic_scholar",
-//         abstract: "Convolutional Neural Networks (CNNs) have revolutionized computer vision tasks, achieving state-of-the-art results in multiple domains.",
-//         citationCount: 200
-//       },
-//       {
-//         title: "The Rise of Transformers in AI",
-//         author: "Sarah Wilson",
-//         doi: "10.1000/example4",
-//         relevance_score: 0.88,
-//         altMetricScore: 37.2,
-//         one_card_summary: {
-//           content: "This paper explores the rapid adoption of transformer-based architectures in artificial intelligence.",
-//           heading: "Transformers in AI"
-//         },
-//         type: "outread",
-//         abstract: "Transformer models have emerged as a dominant architecture for natural language processing and other AI tasks.",
-//         citationCount: 150
-//       }
-//     ]
-//   };
-
 
 function DiscoverPage() {
     const router = useRouter();
@@ -394,7 +358,7 @@ function DiscoverPage() {
     const [articleData, setArticleData] = useState<ArticleData | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [previousQuestions, setPreviousQuestions] = useState<PreviousQuestion[]>(['1']);
+    const [previousQuestions, setPreviousQuestions] = useState<PreviousQuestion[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
@@ -498,14 +462,20 @@ function DiscoverPage() {
     const content = (
         <>
             <div className="flex flex-col items-center justify-start w-full h-full bg-[#F4F7FB] ">
+                {error && <div className="text-red-500 mb-4">{error}</div>}
                 <SearchArea
-                    className={`${isMobile ? 'w-full' : 'w-1/2'}   mb-${isMobile ? '4' : '8'} `}
+                    className={`xl:w-10/12 w-full lg:max-w-4xl  ${isMobile ? 'w-full' : 'w-1/2'}   mb-${isMobile ? '4' : '8'} `}
                     onSubmit={fetchData}
                     isLoading={isLoading}
                     isMobile={isMobile!}
-                    previousQuestions={['previousQuestions1' , 'previousQuestions2' , 'previousQuestions3' , 'previousQuestion4']}
+                    previousQuestions={[
+                        "What is your favorite color?",
+                        "How do you define success?",
+                        "What motivates you to work hard?",
+                      ]}
+                      articleData={articleData}
                 />
-                {error && <div className="text-red-500 mb-4">{error}</div>}
+                
                 {isLoading && <LoadingAnimation />}
                 {!isLoading && <DiscoverContent isMobile={isMobile!} articleData={articleData} />}
                 <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
