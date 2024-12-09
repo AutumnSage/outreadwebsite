@@ -469,9 +469,9 @@ function DiscoverPage() {
                     isLoading={isLoading}
                     isMobile={isMobile!}
                     previousQuestions={[
-                        "What is your favorite color?",
-                        "How do you define success?",
-                        "What motivates you to work hard?",
+                        "Which is better brown or white rice?",
+                        "Does happiness rise with income?",
+                        "Where should we start looking for alien life?",
                       ]}
                       articleData={articleData}
                 />
