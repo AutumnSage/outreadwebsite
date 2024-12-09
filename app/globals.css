@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
 :root {
   --foreground-rgb: 0, 0, 0;
@@ -80,4 +81,22 @@ input:checked + .slider:before {
 
 .slider.round:before {
   border-radius: 50%;
+}
+
+.articles-search {
+  @apply bg-white !shadow-none;
+}
+.articles-search[data-hover='true'] , .articles-search[data-focus='true'] {
+  @apply bg-white shadow-none;
+}
+.articles-search div , .articles-search div[data-hover='true'] , .articles-search div[data-focus='true'] {
+  @apply !bg-white shadow-none;
+}
+.articles-search textarea {
+  font-size: 22px;
+  transition: ease-in-out;
+}
+
+.contact-us-btn[data-hover='true'] , .auth-btn[data-hover='true'] {
+  background-color: transparent !important;
 }
