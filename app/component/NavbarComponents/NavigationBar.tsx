@@ -47,7 +47,7 @@ function AuthButton({ size, variant = "bordered" , isMobile = false }: { size: "
                 <form action={handleSignOut}>
                     <a href="/">
                         <Button type="submit" color="primary" size={size} className="auth-btn mx-1 text-[#132435] hover:text-[#88D84D] text-lg font-medium  border-0 hover:border-b-2 border-b-[#88D84D]  rounded-none transition-all" variant={variant}>
-                            SIGN OUT
+                            Sign Out
                         </Button>
                     </a>
                 </form>
