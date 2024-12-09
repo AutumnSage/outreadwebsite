@@ -1,0 +1,163 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = "postgresql://postgres.cnducrozrpvuuztqkxhz:v6TGXxlpbJ8txHm7@aws-0-ap-southeast-2.pooler.supabase.com:6543/postgres?pgbouncer=true"
+  directUrl = "postgresql://postgres.cnducrozrpvuuztqkxhz:v6TGXxlpbJ8txHm7@aws-0-ap-southeast-2.pooler.supabase.com:5432/postgres"
+}
+
+model User {
+  id                     String                  @id @unique @default(cuid())
+  username               String?                 @unique
+  supabaseUserId         String                  @unique
+  profilePictureSrc      String?
+  email                  String                  @unique
+  role                   Role                    @default(USER)
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @default(now()) @updatedAt
+  credit                 Int                     @default(5)
+  bookmarkedArticles     BookmarkedArticle[]
+  Comments               Comment?
+  FavouriteArticle       FavouriteArticle?
+  trendAnalysisResponses TrendAnalysisResponse[]
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Image {
+  id         String    @id @default(cuid())
+  src        String
+  name       String
+  alt        String
+  Article    Article?
+  Playlist   Playlist? @relation(fields: [playlistId], references: [id])
+  playlistId String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now()) @updatedAt
+}
+
+model Catergory {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  articles Article[] @relation("ArticleToCatergory")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  articleId String   @unique
+  userId    String   @unique
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id])
+}
+
+model Article {
+  id                   String              @id @default(cuid())
+  imageId              String?             @unique
+  doi                  String              @unique
+  originalPaperTitle   String              @default("")
+  authorName           String              @default("")
+  slug                 String              @unique
+  title                String
+  subtitle             String
+  altMetricScore       Int
+  simpleSummary        Json
+  defaultSummary       Json
+  oneCardSummary       Json
+  estimatedReadingTime Int                 @default(8)
+  favouritedCount      Int                 @default(0)
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @default(now()) @updatedAt
+  generatedWith        ArticleType         @default(TEXT_CONTENT)
+  audioId              String?             @unique
+  articleImage         Image?              @relation(fields: [imageId], references: [id])
+  bookmarkedBy         BookmarkedArticle[]
+  comments             Comment?
+  FavouriteArticle     FavouriteArticle?
+  categories           Catergory[]         @relation("ArticleToCatergory")
+  playlists            Playlist[]          @relation("ArticleToPlaylist")
+  paperId              Int?                @unique
+  paper                Paper?              @relation(fields: [paperId], references: [id], onDelete: Cascade)
+}
+
+model BookmarkedArticle {
+  id        String   @id @default(cuid())
+  userId    String
+  articleId String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  article   Article  @relation(fields: [articleId], references: [id])
+
+  @@unique([userId, articleId])
+}
+
+model FavouriteArticle {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  articleId  String   @unique
+  assignedAt DateTime @default(now())
+  assignedBy String
+  Article    Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  User       User     @relation(fields: [userId], references: [id])
+}
+
+model Playlist {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  articles    Article[] @relation("ArticleToPlaylist")
+  Image       Image[]
+}
+
+model TrendAnalysisResponse {
+  id         String   @id @default(cuid())
+  userId     String
+  query      String
+  complexity String
+  response   Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id])
+}
+
+model Paper {
+  id              Int      @id @default(autoincrement())
+  title           String
+  doi             String   @unique
+  publishDate     String
+  authorName      String
+  journal         String
+  ISSN            String
+  altmetricsScore Int
+  citations       Int
+  pdfUrl          String?
+  abstractTree    Json?
+  metrics         Json?
+  Article         Article?
+  vectorId        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+enum Role {
+  USER
+  PAID_USER
+  ADMIN
+}
+
+enum ArticleType {
+  RAW_PDF
+  COMPRESSED_PDF
+  TEXT_CONTENT
+}
