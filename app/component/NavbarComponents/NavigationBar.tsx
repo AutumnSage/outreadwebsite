@@ -1,15 +1,13 @@
 'use client'
 
-import React, { Suspense, useEffect, useRef, useState } from "react";
+import React, { Suspense, useRef, useState } from "react";
 import { Button, Image } from "@nextui-org/react";
 import { useClientMediaQuery } from '../../../hooks/useClientMediaQuery'
-import DownloadFromTheAppStore from "../General/DownloadAppStoreButton";
 import { useFormState } from 'react-dom'
 import { signOut } from "./action";
-import { isAuthenticated, useUserStore, } from '@/lib/zustand/zustand';
+import {  useUserStore, } from '@/lib/zustand/zustand';
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import ModalButton from "../ModalButton/modalButton";
 
 function AuthButton({ size, variant = "bordered" , isMobile = false }: { size: "md" | "lg" | "sm" | undefined, variant: "solid" | "bordered" | "light" | "flat" | "faded" | "shadow" | "ghost" | undefined , isMobile : boolean | null}) {
     const [state, formAction] = useFormState(signOut, null)
@@ -44,13 +42,18 @@ function AuthButton({ size, variant = "bordered" , isMobile = false }: { size: "
                         My Account
                     </Button>
                 </a>
-                <form action={handleSignOut}>
+                <a href="/history">
+                    <Button type="submit" color="primary" size={size} className="auth-btn mx-1 text-[#132435] hover:text-[#88D84D] text-lg font-medium  border-0 hover:border-b-2 border-b-[#88D84D]  rounded-none transition-all" variant={variant}>
+                        History
+                    </Button>
+                </a>
+                {/* <form action={handleSignOut}>
                     <a href="/">
                         <Button type="submit" color="primary" size={size} className="auth-btn mx-1 text-[#132435] hover:text-[#88D84D] text-lg font-medium  border-0 hover:border-b-2 border-b-[#88D84D]  rounded-none transition-all" variant={variant}>
                             Sign Out
                         </Button>
                     </a>
-                </form>
+                </form> */}
             </div>
         )
     } else {

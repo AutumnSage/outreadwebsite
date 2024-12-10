@@ -5,7 +5,7 @@ import { useClientMediaQuery } from "@/hooks/useClientMediaQuery";
 import { Textarea, Card, CardBody, CardHeader, Button, Progress, Select, SelectItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Divider, Skeleton } from "@nextui-org/react";
 import { SearchIcon } from "@nextui-org/shared-icons";
 import Link from "next/link";
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useUserStore, getUserCredit, isAuthenticated, getUserId, getUserIsLoading, updateZustand } from '@/lib/zustand/zustand';
 import { get } from "http";
 import DataLoadingSkeleton from "../component/Discover/DataLoadingSkeleton";
@@ -71,7 +71,10 @@ function sanitizeInput(input: string): string {
 function SearchArea({ className, onSubmit, isLoading, isMobile , previousQuestions , articleData }: { isMobile: boolean, className: string; onSubmit: (query: string, complexity: string) => void; isLoading: boolean , previousQuestions : string[] , articleData : ArticleData | null}) {
     const [value, setValue] = useState("");
     const [complexity, setComplexity] = useState("informative");
+    const searchParams = useSearchParams();
+    const defaultSearchTrending = searchParams.get('search')
 
+    
     const handleChange = (newValue: string) => {
         setValue(sanitizeInput(newValue));
     };
@@ -84,6 +87,11 @@ function SearchArea({ className, onSubmit, isLoading, isMobile , previousQuestio
         setValue(sanitizeInput(value));
         onSubmit(sanitizeInput(value), complexity);
     }
+    useEffect(() => {
+        if (defaultSearchTrending) {
+            searchTending(defaultSearchTrending)
+        }
+    },[])
     return (
         <div className={`${className} flex flex-col items-center py-2 bg-[#F4F7FB]`}>
             <div className="flex flex-col gap-5 w-full justify-center  text-center">
@@ -252,6 +260,8 @@ function InsightCard({ isMobile, insight, relevantPaper, isSelected }: { isMobil
 function DiscoverContent({ isMobile, articleData }: { isMobile: boolean, articleData: ArticleData | null }) {
     const [selectedInsightIndex, setSelectedInsightIndex] = useState<number | null>(null);
     const insightRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+    
 
     const scrollToInsight = useCallback((index: number) => {
         setSelectedInsightIndex(index);
