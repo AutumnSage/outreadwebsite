@@ -171,7 +171,7 @@ function HistoryPage() {
                         questions : [
                             "Is personalised pricing good for us?",
                             "This is a Question I asked today?",
-                            "What are the consequences of having more than 8 coffees a day?.0",
+                            "What are the consequences of having more than 8 coffees a day?",
                         ]
                     },
                     {
